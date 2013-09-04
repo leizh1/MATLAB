@@ -1,0 +1,186 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ARMSBridge</title><meta name="generator" content="MATLAB 8.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-07-12"><meta name="DC.source" content="ARMSBridge.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">classdef</span> ARMSBridge &lt; handle
+    <span class="keyword">properties</span>
+        armsModels = struct
+        armsLocation = <span class="string">'\\livpwfs11\shares\Chartis-ERM\ChartisERM\2012Q4 ARMS Models\'</span>
+        modelList = {}
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>
+        <span class="keyword">function</span> modelList = getModelList(obj)
+            fileSys = dir(obj.armsLocation);
+            fileSys(cell2mat({fileSys.bytes})==0)=[]; <span class="comment">%remove folders</span>
+            nameList = {fileSys.name};
+            idx = strfind(nameList, <span class="string">'__CF5000.mat'</span>);
+            <span class="keyword">for</span> i=1:length(nameList)
+                <span class="keyword">if</span>(idx{i}&gt;0)
+                    obj.modelList = [obj.modelList; nameList{i}(1:idx{i}-1)];
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            modelList = obj.modelList;
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> [INS, paramRisk] = fetchArmsData(obj, fileName)
+            paramRisk = [];
+            display([<span class="string">'Loading data from model:'</span>, fileName, <span class="string">'\n'</span>]);
+            load(fileName, <span class="string">'INS'</span>);
+            sim = load([fileName, <span class="string">'__CF5000.mat'</span>], <span class="string">'Boot*'</span>);
+            simNames = fieldnames(sim);
+            <span class="keyword">for</span> i=1:length(simNames)
+                paramRisk = [paramRisk, sim.(simNames{i}).Params.PD];
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> saveModels(obj)
+            GP = Params.instance();
+            <span class="comment">%get list</span>
+            modelList = obj.getModelList;
+            nModel = length(modelList);
+            obj.armsModels = cell(nModel,3);
+            <span class="comment">%save list</span>
+            save([GP.pathIn, GP.armsModel], <span class="string">'modelList'</span>, <span class="string">'-append'</span>);
+            <span class="keyword">for</span> i=1:nModel
+                modelName = obj.modelList{i};
+                [INS, paramRisk] = obj.fetchArmsData([GP.armsModelLocation, modelName]);
+                model = {};
+                model{1} = obj.modelList{i}; <span class="comment">%name</span>
+                model{2} = INS;
+                model{3} = paramRisk;
+                obj.armsModels.(modelName)=model;
+                <span class="comment">%save</span>
+                eval([modelName <span class="string">'=model'</span>]);
+                save([GP.pathIn, <span class="string">'armsModels.mat'</span>], modelName, <span class="string">'-append'</span>);
+                clear <span class="string">modelName</span>;
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2012b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+classdef ARMSBridge < handle
+    properties
+        armsModels = struct
+        armsLocation = '\\livpwfs11\shares\Chartis-ERM\ChartisERM\2012Q4 ARMS Models\'
+        modelList = {}
+    end
+    
+    methods
+        function modelList = getModelList(obj)
+            fileSys = dir(obj.armsLocation);
+            fileSys(cell2mat({fileSys.bytes})==0)=[]; %remove folders
+            nameList = {fileSys.name};
+            idx = strfind(nameList, '__CF5000.mat');
+            for i=1:length(nameList)
+                if(idx{i}>0)
+                    obj.modelList = [obj.modelList; nameList{i}(1:idx{i}-1)];
+                end
+            end
+            modelList = obj.modelList;
+        end
+        
+        function [INS, paramRisk] = fetchArmsData(obj, fileName)
+            paramRisk = [];
+            display(['Loading data from model:', fileName, '\n']);
+            load(fileName, 'INS');
+            sim = load([fileName, '__CF5000.mat'], 'Boot*');
+            simNames = fieldnames(sim);
+            for i=1:length(simNames)
+                paramRisk = [paramRisk, sim.(simNames{i}).Params.PD];
+            end
+        end
+        
+        function saveModels(obj)
+            GP = Params.instance();
+            %get list
+            modelList = obj.getModelList;
+            nModel = length(modelList);
+            obj.armsModels = cell(nModel,3);
+            %save list
+            save([GP.pathIn, GP.armsModel], 'modelList', '-append');
+            for i=1:nModel
+                modelName = obj.modelList{i};
+                [INS, paramRisk] = obj.fetchArmsData([GP.armsModelLocation, modelName]);
+                model = {};
+                model{1} = obj.modelList{i}; %name
+                model{2} = INS;
+                model{3} = paramRisk;
+                obj.armsModels.(modelName)=model;
+                %save
+                eval([modelName '=model']);
+                save([GP.pathIn, 'armsModels.mat'], modelName, '-append');
+                clear modelName;
+            end
+            
+        end
+    end
+end
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,262 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ECMIO</title><meta name="generator" content="MATLAB 8.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-06-10"><meta name="DC.source" content="ECMIO.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">save simulation</a></li><li><a href="#3">load factors</a></li><li><a href="#4">compression function</a></li><li><a href="#5">memory check</a></li></ul></div><pre class="codeinput"><span class="comment">%This object serves as input and output function, as well as dynamic memory check.</span>
+
+
+<span class="keyword">classdef</span> ECMIO &lt; handle
+    <span class="keyword">events</span>
+        critical_memory
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>(Static)
+</pre><h2>save simulation<a name="2"></a></h2><pre class="codeinput">        <span class="keyword">function</span> saveFactors(LOB)
+            GP = Params.instance;
+            fprintf(<span class="string">'Saving LOB %s:'</span>, LOB.name);
+            factorAY = LOB.factorAY;
+            factorCY = LOB.factorCY;
+            filePath = [GP.saved <span class="string">'simulation_'</span> num2str(LOB.ID) <span class="string">'_'</span> LOB.name <span class="string">'.mat'</span>];
+            tic
+            save(filePath, <span class="string">'factorAY'</span>, <span class="string">'factorCY'</span>);
+            toc
+
+        <span class="keyword">end</span>
+</pre><h2>load factors<a name="3"></a></h2><pre class="codeinput">        <span class="keyword">function</span> [factorAY, factorCY] = loadFactors(LOB)
+            GP = Params.instance;
+            load([GP.saved <span class="string">'simulation_'</span> num2str(LOB.ID) <span class="string">'_'</span> LOB.name <span class="string">'.mat'</span>]);
+        <span class="keyword">end</span>
+</pre><h2>compression function<a name="4"></a></h2><pre class="codeinput">        <span class="keyword">function</span> compressed = compressMatrix(matrix, key)
+            n = size(matrix,3);
+            origByte = whos(<span class="string">'matrix'</span>);
+            origByte= origByte.bytes;
+
+            compressed = zeros(length(key), n, <span class="string">'single'</span>);
+            fprintf(<span class="string">'Compressing:'</span>);
+            tic
+            <span class="keyword">for</span> i=1:n
+                tempMatrix = matrix(:,:,i);
+                compressed(:,i) = tempMatrix(key);
+            <span class="keyword">end</span>
+            toc
+            newByte = whos(<span class="string">'compressed'</span>);
+            newByte = newByte.bytes;
+            fprintf(<span class="string">'Compression rate = %d%% \n'</span>, int8(newByte/origByte*100));
+        <span class="keyword">end</span>
+</pre><h2>memory check<a name="5"></a></h2><pre class="codeinput">        <span class="keyword">function</span> RAMCheck()
+            <span class="comment">%memory check</span>
+            [user, sys] = memory;
+            memUsage = user.MemUsedMATLAB/1e9;
+            memSys = sys.SystemMemory.Available/1e9;
+            fprintf(<span class="string">'Memory usage: %2.2f GB (%2.2f%%) \n'</span>, memUsage, memUsage/memSys*100);
+            <span class="keyword">if</span>(memUsage&gt;memSys*GC.MEM_CRITICAL)
+                warning(<span class="string">'Critical memory'</span>);
+                notify(ECMIO, critical_memory);
+            <span class="keyword">elseif</span>(memUsage&gt;memSys*GC.MEM_LOW)
+                warning(<span class="string">'System low memory'</span>);
+                <span class="comment">%do something</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> reload = factorsNeedGenerate(LOB)
+            GP = Params.instance;
+            <span class="keyword">try</span>
+                [factorAY, factorCY] = ECMIO.loadFactors(LOB);
+            <span class="keyword">catch</span> err
+                <span class="keyword">if</span>(strcmp(err.identifier, <span class="string">'MATLAB:load:couldNotReadFile'</span>))
+                    <span class="keyword">if</span>(~isdir(<span class="string">'Saved'</span>))
+                        mkdir(<span class="string">'Saved'</span>);
+                        fprintf(<span class="string">'Dir "Saved" created \n'</span>);
+                    <span class="keyword">else</span>
+                        fprintf(<span class="string">'Factors of %s have not been generated, starting simulation\n'</span>, LOB.name);
+                    <span class="keyword">end</span>
+                    reload = true;
+                    <span class="keyword">return</span>;
+                <span class="keyword">else</span>
+                    rethrow(err);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+
+            <span class="keyword">if</span>(size(factorAY,1) &lt; GP.N)
+                reload = true;
+            <span class="keyword">else</span>
+                LOB.factorAY = factorAY(1:GP.N , :);
+                LOB.factorCY = factorCY(1:GP.N , :);
+                reload = false;
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> loadLineInfo(path)
+            [~, ~, LOBNames] = xlsread(path,<span class="string">'info'</span>,<span class="string">'A1:A4'</span>);
+            <span class="comment">%fields</span>
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2012b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%This object serves as input and output function, as well as dynamic memory check.
+
+
+classdef ECMIO < handle
+    events
+        critical_memory
+    end
+    
+    methods(Static)
+         %% save simulation
+        function saveFactors(LOB)
+            GP = Params.instance;
+            fprintf('Saving LOB %s:', LOB.name);
+            factorAY = LOB.factorAY;
+            factorCY = LOB.factorCY;
+            filePath = [GP.saved 'simulation_' num2str(LOB.ID) '_' LOB.name '.mat'];
+            tic
+            save(filePath, 'factorAY', 'factorCY');
+            toc
+            
+        end
+        
+        %% load factors
+        function [factorAY, factorCY] = loadFactors(LOB)
+            GP = Params.instance;
+            load([GP.saved 'simulation_' num2str(LOB.ID) '_' LOB.name '.mat']);
+        end
+        
+        %% compression function
+        function compressed = compressMatrix(matrix, key)
+            n = size(matrix,3);
+            origByte = whos('matrix');
+            origByte= origByte.bytes;
+            
+            compressed = zeros(length(key), n, 'single');
+            fprintf('Compressing:');
+            tic
+            for i=1:n
+                tempMatrix = matrix(:,:,i);
+                compressed(:,i) = tempMatrix(key);
+            end
+            toc
+            newByte = whos('compressed');
+            newByte = newByte.bytes;
+            fprintf('Compression rate = %d%% \n', int8(newByte/origByte*100));
+        end
+        
+        %% memory check
+        function RAMCheck()
+            %memory check
+            [user, sys] = memory;
+            memUsage = user.MemUsedMATLAB/1e9;
+            memSys = sys.SystemMemory.Available/1e9;
+            fprintf('Memory usage: %2.2f GB (%2.2f%%) \n', memUsage, memUsage/memSys*100);
+            if(memUsage>memSys*GC.MEM_CRITICAL)
+                warning('Critical memory');
+                notify(ECMIO, critical_memory);
+            elseif(memUsage>memSys*GC.MEM_LOW)
+                warning('System low memory');
+                %do something
+            end
+        end
+        
+        function reload = factorsNeedGenerate(LOB)
+            GP = Params.instance;
+            try
+                [factorAY, factorCY] = ECMIO.loadFactors(LOB);
+            catch err
+                if(strcmp(err.identifier, 'MATLAB:load:couldNotReadFile'))
+                    if(~isdir('Saved'))
+                        mkdir('Saved');
+                        fprintf('Dir "Saved" created \n');
+                    else
+                        fprintf('Factors of %s have not been generated, starting simulation\n', LOB.name);
+                    end
+                    reload = true;
+                    return;
+                else
+                    rethrow(err);
+                end
+            end
+            
+            if(size(factorAY,1) < GP.N)
+                reload = true;
+            else
+                LOB.factorAY = factorAY(1:GP.N , :);
+                LOB.factorCY = factorCY(1:GP.N , :);
+                reload = false;
+            end
+            
+        end
+        
+        function loadLineInfo(path)
+            [~, ~, LOBNames] = xlsread(path,'info','A1:A4');
+            %fields 
+        end
+        
+    end
+end
+
+##### SOURCE END #####
+--></body></html>
